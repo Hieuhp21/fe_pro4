@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'section_title_widget.dart';
+import 'package:sweet_peach_fe/screens/home/section_title_widget.dart';
+
 
 class RecommendedStoriesWidget extends StatelessWidget {
   final String title;

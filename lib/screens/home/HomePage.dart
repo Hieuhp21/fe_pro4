@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sweet_peach_fe/new_stories_screen.dart';
-import 'package:sweet_peach_fe/recommended_stories_screen.dart';
-import 'package:sweet_peach_fe/recommended_stories_widget.dart';
-import 'categories_widget.dart';
+import 'package:sweet_peach_fe/screens/home/recommended_stories_screen.dart';
+import 'package:sweet_peach_fe/screens/home/recommended_stories_widget.dart';
 import 'bxh_hot_widget.dart';
+import 'categories_widget.dart';
+import 'new_stories_screen.dart';
 import 'new_stories_widget.dart';
 
 
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(height: 28),
                     RecommendedStoriesWidget(title: 'Truyện đề xuất',onTap: () => _navigateToRecommendedStories(context)),
                     SizedBox(height: 28),
-                    CategoriesWidget(title: 'Phân loại',onTap: () => _navigateToRecommendedStories(context)),
+                    CategoriesWidget(title: 'Phân loại',onTap: () => _navigateToRecommendedStories(context),),
                     SizedBox(height: 28),
                     BxhHotWidget(title: 'BXH Hot',onTap: () => _navigateToRecommendedStories(context)),
                   ],
@@ -82,33 +82,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black.withOpacity(0.5),
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.white,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Tìm kiếm',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Tủ sách',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Tôi',
-          ),
-        ],
-      ),
+
     );
   }
 }

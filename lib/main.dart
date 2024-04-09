@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_peach_fe/screens/comic/chapter_detail_screen.dart';
+import 'package:sweet_peach_fe/screens/comic/comic_detail_screen.dart';
+import 'package:sweet_peach_fe/screens/index.dart';
+import 'package:sweet_peach_fe/screens/user/login_screen.dart';
+import 'package:sweet_peach_fe/test.dart';
 
-import 'HomePage.dart';
 
 
 void main() {
@@ -15,9 +19,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-
-      home: HomePage(),
-
+      //home: IndexController(),
+      home: ChapterDetailScreen(chapterId:1,),
     );
   }
 }

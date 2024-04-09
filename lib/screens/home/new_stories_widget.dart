@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../apis/newest_service.dart';
+import '../../models/comic.dart';
+import '../comic/comic_detail_screen.dart';
 import 'section_title_widget.dart';
 
 class NewStoriesWidget extends StatelessWidget {
@@ -17,71 +20,47 @@ class NewStoriesWidget extends StatelessWidget {
           onTap: onTap,
         ),
         SizedBox(height: 16),
-        _buildNewStories(context), // Truyền context vào hàm _buildNewStories
+        FutureBuilder<List<Comic>>(
+          future: NewestService.fetchNewStories(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (snapshot.data == null) {
+              return const Text('No data available');
+            } else {
+              return _buildNewStories(context, snapshot.data!);
+            }
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildNewStories(BuildContext context) {
-    final itemWidth = MediaQuery.of(context).size.width * 0.33; // Đặt chiều rộng của mỗi phần tử
-
-    // Dữ liệu giả mạo cho các truyện
-    List<Map<String, dynamic>> fakeData = [
-      {
-        'title': 'TA TRỜI SINH ĐÃ LÀ NHÂN VẬT PHẢN DIỆN',
-        'latestChapter': 24,
-        'timeAgo': 3,
-        'coverImageUrl': 'images/img1.jpg', // URL hình ảnh bìa
-      },
-      {
-        'title': 'Truyện số 2',
-        'latestChapter': 15,
-        'timeAgo': 5,
-        'coverImageUrl': 'images/img2.jpg', // URL hình ảnh bìa
-      },
-      {
-        'title': 'Truyện số 1',
-        'latestChapter': 24,
-        'timeAgo': 3,
-        'coverImageUrl': 'images/img2.jpg', // URL hình ảnh bìa
-      },
-      {
-        'title': 'Truyện số 2',
-        'latestChapter': 15,
-        'timeAgo': 5,
-        'coverImageUrl': 'images/img2.jpg', // URL hình ảnh bìa
-      },
-      {
-        'title': 'Truyện số 1',
-        'latestChapter': 24,
-        'timeAgo': 3,
-        'coverImageUrl': 'images/img2.jpg', // URL hình ảnh bìa
-      },
-      {
-        'title': 'Truyện số 2',
-        'latestChapter': 15,
-        'timeAgo': 5,
-        'coverImageUrl': 'images/img2.jpg', // URL hình ảnh bìa
-      },
-      // Thêm dữ liệu cho các truyện khác nếu cần
-    ];
-
+  Widget _buildNewStories(BuildContext context, List<Comic> data) {
+    final itemWidth = MediaQuery.of(context).size.width * 0.33;
+    String url=  'http://192.168.0.103:8080/images/';
     return Container(
       height: 160,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: fakeData.map((data) {
+          children: data.map((comic) {
             return GestureDetector(
               onTap: () {
-                // Xử lý khi nhấn vào truyện mới
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ComicDetailScreen( comicId: comic.comicId,),
+                  ),
+                );
               },
               child: Container(
                 width: itemWidth,
                 margin: const EdgeInsets.only(left: 14, right: 4),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8), // Bo góc cho container
-                  //color: Colors.blue,
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,7 +71,7 @@ class NewStoriesWidget extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                           image: DecorationImage(
-                            image: AssetImage(data['coverImageUrl']),
+                            image: NetworkImage(url+comic.imageUrl),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -107,23 +86,22 @@ class NewStoriesWidget extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              data['title'], // Sử dụng tiêu đề từ dữ liệu giả mạo
+                              comic.title,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12, // Giảm kích thước của chữ
+                                fontSize: 12,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-
                             Row(
                               children: [
                                 Text(
-                                  'Chapter ${data['latestChapter']}  ',
+                                  '${comic.lastChapter}  ',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 10, // Giảm cỡ chữ
+                                    fontSize: 10,
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -133,11 +111,11 @@ class NewStoriesWidget extends StatelessWidget {
                                   size: 12,
                                 ),
                                 Text(
-                                  '${data['timeAgo']}h',
+                                  '${comic.timeSinceAdded}',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 10, // Giảm cỡ chữ
-                                    fontWeight: FontWeight.bold, // In đậm
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
