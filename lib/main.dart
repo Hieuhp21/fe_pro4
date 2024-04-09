@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      //home: IndexController(),
-      home: ChapterDetailScreen(chapterId:1,),
+      home: IndexController(),
+      //home: ChapterDetailScreen(chapterId:1,),
     );
   }
 }
