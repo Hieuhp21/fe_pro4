@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../apis/api_const.dart';
 import '../../apis/chapter_service.dart';
+import '../../apis/history_service.dart';
 import '../../models/image_chapter.dart';
 
 class ChapterDetailScreen extends StatefulWidget {
   final int chapterId;
   final List<Map<String, dynamic>> chapters;
-
-  ChapterDetailScreen({required this.chapterId, required this.chapters});
+  final int comicId;
+  ChapterDetailScreen({required this.chapterId, required this.chapters,  required this.comicId});
 
   @override
   _ChapterDetailScreenState createState() => _ChapterDetailScreenState();
 }
 
 class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
+  final historyService= HistoryService();
+  final chapterService = ChapterService();
   late ScrollController _scrollController;
-  int currentChapterId = 1;
+  int currentChapterId =1;
   bool isFavorite = false;
   bool isFilterVisible = false;
   String selectedSortingOption = 'Mới nhất';
@@ -54,14 +57,23 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       }
     }
   }
+  Future<void> addReadingHistory(int chapterId) async {
+    // Đợi kết quả của historyService.addReadingHistory
+    await historyService.addReadingHistory(widget.comicId, chapterId);
+  }
+  Future<void> incrementViewCount(int chapterId) async {
+
+    await chapterService.incrementViewCount(chapterId) ;
+  }
   Future<void> fetchChapterImages(int chapterId) async {
     try {
-      ChapterService chapterService = ChapterService();
       List<ImageChapter> fetchedImages =
       await chapterService.getImagesChapterByChapterId(chapterId);
       setState(() {
         images = fetchedImages;
       });
+      await addReadingHistory(chapterId);
+      await incrementViewCount(chapterId);
     } catch (e) {
       print('Error fetching chapter images: $e');
     }
@@ -156,16 +168,16 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                   ),
                 ],
               ),
-              Positioned(
+              isFilterVisible ?   Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 300),
-                  height: isFilterVisible ? MediaQuery.of(context).size.height * 0.5 : 0,
+                  height:  MediaQuery.of(context).size.height * 0.5 ,
                   color: Colors.black,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min, // Đặt mainAxisSize thành MainAxisSize.min
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -223,8 +235,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                     ],
                   ),
                 ),
-              ),
-
+              ):Container(),
             ],
           ),
         ),

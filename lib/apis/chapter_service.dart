@@ -15,4 +15,18 @@ class ChapterService {
       throw Exception('Failed to load images for chapter');
     }
   }
+  Future<void> incrementViewCount(int id) async {
+    final String apiUrl = '${ApiConst.baseUrl}api/chapters/view/$id';
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        print('View count incremented successfully');
+      } else {
+        print('Failed to increment view count. Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception occurred while incrementing view count: $e');
+    }
+  }
 }

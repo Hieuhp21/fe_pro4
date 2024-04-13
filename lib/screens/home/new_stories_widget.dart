@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../apis/newest_service.dart';
+import 'package:sweet_peach_fe/apis/api_const.dart';
+import '../../apis/comic_service.dart';
 import '../../models/comic.dart';
 import '../comic/comic_detail_screen.dart';
 import 'section_title_widget.dart';
@@ -21,7 +22,7 @@ class NewStoriesWidget extends StatelessWidget {
         ),
         SizedBox(height: 16),
         FutureBuilder<List<Comic>>(
-          future: NewestService.fetchNewStories(),
+          future: ComicService.fetchNewStories(6),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();
@@ -40,7 +41,7 @@ class NewStoriesWidget extends StatelessWidget {
 
   Widget _buildNewStories(BuildContext context, List<Comic> data) {
     final itemWidth = MediaQuery.of(context).size.width * 0.33;
-    String url=  'http://192.168.0.103:8080/images/';
+    String url=  '${ApiConst.baseUrl}images/';
     return Container(
       height: 160,
       child: SingleChildScrollView(

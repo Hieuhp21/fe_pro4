@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sweet_peach_fe/screens/comic/chapter_detail_screen.dart';
-import 'package:sweet_peach_fe/screens/comic/comic_detail_screen.dart';
 import 'package:sweet_peach_fe/screens/index.dart';
-import 'package:sweet_peach_fe/screens/user/login_screen.dart';
-import 'package:sweet_peach_fe/test.dart';
+
 
 
 
@@ -20,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       home: IndexController(),
-      //home: ChapterDetailScreen(chapterId:1,),
+      //home: CustomSliverAppbar(),
     );
   }
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_peach_fe/apis/api_const.dart';
+import 'package:sweet_peach_fe/apis/comic_service.dart';
 import 'package:sweet_peach_fe/screens/home/section_title_widget.dart';
+
+import '../comic/comic_detail_screen.dart';
 
 
 class BxhHotWidget extends StatefulWidget {
@@ -11,22 +15,21 @@ class BxhHotWidget extends StatefulWidget {
   @override
   _BxhHotWidgetState createState() => _BxhHotWidgetState();
 }
-
 class _BxhHotWidgetState extends State<BxhHotWidget> {
-  String _selectedRanking = 'Ngày';
+  String _selectedRanking = 'day';
   PageController _pageController = PageController(initialPage: 0);
   int _currentPage = 0;
 
   List<List<String>> _rankings = [
-    ['Ngày', 'BXH Ngày'],
-    ['Tuần', 'BXH Tuần'],
-    ['Tháng', 'BXH Tháng']
+    ['day', 'BXH Ngày'],
+    ['week', 'BXH Tuần'],
+    ['month', 'BXH Tháng']
   ];
 
-  List<List<Map<String, dynamic>>> _fakeRankings = [
-    generateFakeRanking(10),
-    generateFakeRanking(10),
-    generateFakeRanking(10),
+  List<List<Map<String, dynamic>>> _Rankings = [
+    [],
+    [],
+    [],
   ];
 
   @override
@@ -37,7 +40,49 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
         _currentPage = _pageController.page!.round();
       });
     });
+    _fetchRankings('day',6);
+    _fetchRankings('week',6);
+    _fetchRankings('month',6);
+
   }
+
+  Future<void> _fetchRankings(String period, int limit) async {
+    try {
+      final rankings = await ComicService.fetchRankingComic(period,limit);
+      setState(() {
+        switch (period) {
+          case 'day':
+            _Rankings[0] = _convertToRanking(rankings);
+            break;
+          case 'week':
+            _Rankings[1] = _convertToRanking(rankings);
+            break;
+          case 'month':
+            _Rankings[2] = _convertToRanking(rankings);
+            break;
+        }
+      });
+      return Future.value();
+    } catch (e) {
+      print('Error fetching rankings: $e');
+    }
+  }
+
+  List<Map<String, dynamic>> _convertToRanking(List<dynamic> rankings) {
+    return rankings.map((comic) {
+      return {
+        'comicId': comic.comicId,
+        'storyName': comic.title,
+        'coverImage': comic.imageUrl,
+        'latestChapter': comic.lastChapter,
+        'timeAgo': comic.timeSinceAdded,
+        'genres': comic.genres,
+        'views': comic.views,
+        'follows': comic.follows,
+      };
+    }).toList();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +94,7 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
             title: widget.title,
             onTap: widget.onTap,
           ),
+
           ToggleButtons(
             isSelected: List.generate(_rankings.length, (index) => _rankings[index][0] == _selectedRanking),
             onPressed: (int index) {
@@ -85,9 +131,9 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
                 });
               },
               children: [
-                _buildRankingList(_fakeRankings[0]),
-                _buildRankingList(_fakeRankings[1]),
-                _buildRankingList(_fakeRankings[2]),
+                _buildRankingList(_Rankings[0]),
+                _buildRankingList(_Rankings[1]),
+                _buildRankingList(_Rankings[2]),
               ],
             ),
           ),
@@ -96,21 +142,6 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
     );
   }
 
-  static List<Map<String, dynamic>> generateFakeRanking(int length) {
-    List<Map<String, dynamic>> fakeRanking = [];
-    for (int i = 0; i < length; i++) {
-      fakeRanking.add({
-        'storyName': 'Story ${i + 1}',
-        'coverImage': 'images/img1.jpg', // Thay đổi tên thuộc tính thành 'coverImage'
-        'latestChapter': 'Chapter ${i + 1}',
-        'timeAgo': '1 hour ago',
-        'genres': ['Action', 'Adventure', 'Fantasy'],
-        'views': 100045,
-        'follows': 56400,
-      });
-    }
-    return fakeRanking;
-  }
 
 
   Widget _buildRankingList(List<Map<String, dynamic>> ranking) {
@@ -123,6 +154,7 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
   }
 
   Widget _buildItem(Map<String, dynamic> story) {
+    int comicId = story['comicId'] ;
     String storyName = story['storyName'] ?? ''; // Kiểm tra null trước khi sử dụng
     String coverImage = story['coverImage'] ?? '';
     String latestChapter = story['latestChapter'] ?? '';
@@ -131,64 +163,75 @@ class _BxhHotWidgetState extends State<BxhHotWidget> {
     int views = story['views'] ?? 0;
     int follows = story['follows'] ?? 0;
 
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 80,
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15), // Bo tròn ảnh
-              color: Colors.grey[800], // Màu nền xám đậm
+    return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ComicDetailScreen( comicId: comicId,),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15), // Bo tròn ảnh
-              child: Image.asset(
-                coverImage,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  storyName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white, // Chuyển màu chữ thành màu trắng
+          );
+        },
+        child:Container(
+          padding: EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 80,
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15), // Bo tròn ảnh
+                  color: Colors.grey[800], // Màu nền xám đậm
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15), // Bo tròn ảnh
+                  child: Image.network(
+                    '${ApiConst.baseUrl}images/${coverImage}',
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Text('$latestChapter | $timeAgo', style: TextStyle(color: Colors.grey)), // Chuyển màu chữ thành màu trắng
-                SizedBox(height: 5),
-                Wrap(
-                  spacing: 5,
-                  children: genres.map((genre) {
-                    return _buildTag(genre);
-                  }).toList(),
-                ),
-                SizedBox(height: 5),
-                Row(
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.remove_red_eye, color: Colors.greenAccent),
-                    SizedBox(width: 5),
-                    Text(_abbreviateNumber(views), style: TextStyle(color: Colors.grey)), // Áp dụng hàm _abbreviateNumber vào số views
-                    Spacer(),
-                    Icon(Icons.favorite, color: Colors.pinkAccent),
-                    SizedBox(width: 5),
-                    Text('${_abbreviateNumber(follows)} follows', style: TextStyle(color: Colors.grey)),
+                    Text(
+                      storyName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // Chuyển màu chữ thành màu trắng
+                      ),
+                    ),
+                    Text('$latestChapter | $timeAgo', style: TextStyle(color: Colors.grey)), // Chuyển màu chữ thành màu trắng
+                    SizedBox(height: 5),
+                    Wrap(
+                      spacing: 5,
+                      children: genres.map((genre) {
+                        return _buildTag(genre);
+                      }).toList(),
+                    ),
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(Icons.remove_red_eye, color: Colors.greenAccent),
+                        SizedBox(width: 5),
+                        Text(_abbreviateNumber(views), style: TextStyle(color: Colors.grey)), // Áp dụng hàm _abbreviateNumber vào số views
+                        Spacer(),
+                        Icon(Icons.favorite, color: Colors.pinkAccent),
+                        SizedBox(width: 5),
+                        Text('${_abbreviateNumber(follows)} follows', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
+
+
   }
 
   String _abbreviateNumber(int number) {

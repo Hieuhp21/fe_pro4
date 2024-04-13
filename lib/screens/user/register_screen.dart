@@ -70,15 +70,6 @@ class Register extends StatelessWidget {
                         fillColor: Colors.white.withOpacity(0.5),
                       ),
                     ),
-                    SizedBox(height: 30),
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        hintText: 'Nhập lại mật khẩu',
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.5),
-                      ),
-                    ),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {},

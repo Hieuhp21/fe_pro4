@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:sweet_peach_fe/screens/home/recommended_stories_screen.dart';
-import 'package:sweet_peach_fe/screens/home/recommended_stories_widget.dart';
-import 'bxh_hot_widget.dart';
-import 'categories_widget.dart';
-import 'new_stories_screen.dart';
 import 'new_stories_widget.dart';
-
+import 'recommended_stories_widget.dart';
+import 'categories_widget.dart';
+import 'bxh_hot_widget.dart';
 
 class HomePage extends StatefulWidget {
+  Function(int, String) navigateToCategory;
+
+  HomePage({required this.navigateToCategory});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -19,20 +20,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  void _navigateToNewStories(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => NewStoriesScreen()),
-    );
-  }
-
-  void _navigateToRecommendedStories(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => RecommendedStoriesScreen()),
-    );
   }
 
   @override
@@ -60,7 +47,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Image.asset('images/logo.jpg', width: 50, height: 50),
                           SizedBox(width: 8),
-                          Text(
+                          const Text(
                             'Sweet Peach',
                             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
@@ -68,13 +55,25 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: 28),
-                    NewStoriesWidget(title: 'Truyện mới',onTap: () => _navigateToNewStories(context)),
+                    NewStoriesWidget(
+                      title: 'Truyện mới',
+                      onTap: () => widget.navigateToCategory(1, 'newest'),
+                    ),
                     SizedBox(height: 28),
-                    RecommendedStoriesWidget(title: 'Truyện đề xuất',onTap: () => _navigateToRecommendedStories(context)),
+                    RecommendedStoriesWidget(
+                      title: 'Truyện đề xuất',
+                      onTap: () => widget.navigateToCategory(1, 'recommended'),
+                    ),
                     SizedBox(height: 28),
-                    CategoriesWidget(title: 'Phân loại',onTap: () => _navigateToRecommendedStories(context),),
+                    CategoriesWidget(
+                      title: 'Phân loại',
+                      onTap: () => widget.navigateToCategory(1, 'showoption'),
+                    ),
                     SizedBox(height: 28),
-                    BxhHotWidget(title: 'BXH Hot',onTap: () => _navigateToRecommendedStories(context)),
+                    BxhHotWidget(
+                      title: 'BXH Hot',
+                      onTap: () => widget.navigateToCategory(1, 'top'),
+                    ),
                   ],
                 ),
               ),
@@ -82,7 +81,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
     );
   }
 }

@@ -56,7 +56,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChapterDetailScreen(chapterId: chapters[index].id, chapters: chapterList),
+        builder: (context) => ChapterDetailScreen(chapterId: chapters[index].id, chapters: chapterList, comicId: comic.id,),
       ),
     );
   }
@@ -224,6 +224,15 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                   color: Colors.white,
                 ),
 
+
+              ],
+            ),
+          ),
+          Container(
+            color: Colors.grey.withOpacity(0.3),
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child:  Column(
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -242,7 +251,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                   ],
                 ),
               ],
-            ),
+            )
           ),
           ListView.builder(
             shrinkWrap: true,
@@ -272,26 +281,33 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                             ),
                             Row(
                               children: [
-                                Icon(Icons.remove_red_eye, color: Colors.white),
-                                SizedBox(width: 4),
+                                Icon(Icons.remove_red_eye, color: Colors.grey, size: 14),
+                                SizedBox(width: 2),
                                 Text(
                                   abbreviateNumber(chapters[index].viewCount),
                                   style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Icon(Icons.update, color: Colors.white),
-                                SizedBox(width: 4),
-                                Text(
-                                  DateFormat.yMMMd().add_Hm().format(chapters[index].updatedAt),
-                                  style: TextStyle(
-                                    color: Colors.white,
+                                    fontSize: 14,
+                                    color: Colors.grey,
                                   ),
                                 ),
                               ],
                             ),
+                            Row(
+                              children: [
+                                Icon(Icons.update, color: Colors.grey, size: 14),
+                                SizedBox(width: 2),
+                                Text(
+                                  DateFormat.yMMMd().add_Hm().format(chapters[index].updatedAt),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+
                           ],
+
                         ),
                       ),
                       Container(

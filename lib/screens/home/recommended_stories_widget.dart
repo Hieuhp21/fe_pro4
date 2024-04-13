@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_peach_fe/apis/api_const.dart';
 import 'package:sweet_peach_fe/screens/home/section_title_widget.dart';
+
+import '../../apis/comic_service.dart';
+import '../../models/comic.dart';
 
 
 class RecommendedStoriesWidget extends StatelessWidget {
@@ -17,58 +21,26 @@ class RecommendedStoriesWidget extends StatelessWidget {
           title: title,
           onTap: onTap,
         ),
-        _buildRecommendedStories(context),
+        FutureBuilder<List<Comic>>(
+          future: ComicService.fetchRecomComic(6),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (snapshot.data == null) {
+              return const Text('No data available');
+            } else {
+              return _buildRecommendedStories(context, snapshot.data!);
+            }
+          },
+        ),
+
       ],
     );
   }
 
-  Widget _buildRecommendedStories(BuildContext context) {
-    List<Map<String, dynamic>> fakeData = [
-      {
-        'title': 'Truyện đề xuất 1',
-        'views': 1788,
-        'followers': 5320,
-        'latestChapter': 24,
-        'coverImageUrl': 'images/img1.jpg', // Đường dẫn ảnh giả mạo
-      },
-      {
-        'title': 'Truyện đề xuất 2',
-        'views': 6320,
-        'followers': 9420,
-        'latestChapter': 15,
-        'coverImageUrl': 'images/img2.jpg', // Đường dẫn ảnh giả mạo
-      },
-      {
-        'title': 'Truyện đề xuất 1',
-        'views': 1788,
-        'followers': 5320,
-        'latestChapter': 24,
-        'coverImageUrl': 'images/img2.jpg', // Đường dẫn ảnh giả mạo
-      },
-      {
-        'title': 'Truyện đề xuất 2',
-        'views': 6320,
-        'followers': 9420,
-        'latestChapter': 15,
-        'coverImageUrl': 'images/img1.jpg', // Đường dẫn ảnh giả mạo
-      },
-      {
-        'title': 'Truyện đề xuất 1',
-        'views': 1788,
-        'followers': 5320,
-        'latestChapter': 24,
-        'coverImageUrl': 'images/img1.jpg', // Đường dẫn ảnh giả mạo
-      },
-      {
-        'title': 'Truyện đề xuất 2',
-        'views': 6320,
-        'followers': 9420,
-        'latestChapter': 15,
-        'coverImageUrl': 'images/img1.jpg', // Đường dẫn ảnh giả mạo
-      },
-      // Thêm dữ liệu cho các truyện khác nếu cần
-    ];
-
+  Widget _buildRecommendedStories(BuildContext context, List<Comic> list) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: GridView.builder(
@@ -79,15 +51,15 @@ class RecommendedStoriesWidget extends StatelessWidget {
           crossAxisSpacing: 16.0,
           mainAxisSpacing: 16.0,
         ),
-        itemCount: fakeData.length,
+        itemCount: list.length,
         itemBuilder: (BuildContext context, int index) {
-          Map<String, dynamic> data = fakeData[index];
+          Comic comic = list[index];
 
-          String title = data['title'];
-          int views = data['views'];
-          int followers = data['followers'];
-          int latestChapter = data['latestChapter'];
-          String coverImageUrl = data['coverImageUrl'];
+          String title = comic.title;
+          int views = comic.views;
+          int followers = comic.follows;
+          String latestChapter = comic.lastChapter ;
+          String coverImageUrl = comic.imageUrl;
 
           // Quy đổi số lượt xem và số lượt theo dõi sang đơn vị K và M
           String viewsText = _abbreviateNumber(views);
@@ -115,8 +87,8 @@ class RecommendedStoriesWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 6,
-                    child: Image.asset(
-                      data['coverImageUrl'],
+                    child: Image.network(
+                      '${ApiConst.baseUrl}images/${coverImageUrl}',
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -166,7 +138,7 @@ class RecommendedStoriesWidget extends StatelessWidget {
                               ),
                               SizedBox(width: 8),
                               Text(
-                                'Chapter: $latestChapter',
+                                 latestChapter,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -181,12 +153,12 @@ class RecommendedStoriesWidget extends StatelessWidget {
                 ],
               ),
             ),
-
           );
         },
       ),
     );
   }
+
 
   // Hàm để quy đổi số lượt xem và số lượt theo dõi sang đơn vị K và M
   String _abbreviateNumber(int number) {

@@ -4,13 +4,13 @@ class SectionTitleWidget extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const SectionTitleWidget({required this.title, required this.onTap}) : super();
-
+  const SectionTitleWidget({required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    return Container(
+      color: Colors.black, // Màu nền cho phần tiêu đề
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Thêm padding cho tiêu đề
       child: Row(
         children: [
           Text(

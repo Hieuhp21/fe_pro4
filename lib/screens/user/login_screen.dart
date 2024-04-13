@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:sweet_peach_fe/screens/user/password_hashing.dart';
 import 'package:sweet_peach_fe/screens/user/register_screen.dart';
 import 'package:sweet_peach_fe/screens/user/validation.dart';
-
 import '../../apis/auth_service.dart';
 import '../index.dart';
-
+import 'my_profile.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -21,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     String email = emailController.text;
     String password = PasswordHashing.hashPassword(passwordController.text);
-
+    print("password"+password);
     if (Validation.validateEmail(email) != null ||
         Validation.validatePassword(password) != null) {
       // Dữ liệu không hợp lệ, không gửi yêu cầu đăng nhập
@@ -29,13 +28,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // Dữ liệu hợp lệ, gọi service để đăng nhập
-    bool loggedIn = await AuthService().login(email, password);
-    if (loggedIn) {
-      // Đăng nhập thành công
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => MyProfile()),
-      // );
+    String? token = await AuthService().login(email, password);
+    if (token != null) {
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => IndexController()),
+      );
     } else {
       // Đăng nhập thất bại
       // Hiển thị thông báo lỗi cho người dùng
@@ -58,7 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,88 +93,91 @@ class _LoginScreenState extends State<LoginScreen> {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Image.asset(
-                "images/logo.jpg",
-                width: 100,
-                height: 100,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Image.asset(
+                  "images/logo.jpg",
+                  width: 100,
+                  height: 100,
+                ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    'Đăng Nhập',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      hintText: 'Email của bạn',
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: 'Mật khẩu của bạn',
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      // Xử lý khi nhấn vào "Quên mật khẩu"
-                    },
-                    child: Text(
-                      'Quên mật khẩu?',
+              Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      'Đăng Nhập',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        decoration: TextDecoration.underline,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: _login,
-                    child: Text('Đăng Nhập'),
-                  ),
-                  SizedBox(height: 20),
-                  _buildDivider(),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Register()),
-                      );
-                    },
-                    child: Text('Đăng Ký'),
-                  ),
-                ],
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        hintText: 'Email của bạn',
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                    SizedBox(height: 40),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: 'Mật khẩu của bạn',
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {
+                        // Xử lý khi nhấn vào "Quên mật khẩu"
+                      },
+                      child: Text(
+                        'Quên mật khẩu?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: _login,
+                      child: Text('Đăng Nhập'),
+                    ),
+                    SizedBox(height: 20),
+                    _buildDivider(),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Register()),
+                        );
+                      },
+                      child: Text('Đăng Ký'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   Widget _buildDivider() {
     return Padding(

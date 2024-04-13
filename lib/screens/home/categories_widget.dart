@@ -21,7 +21,7 @@ class CategoriesWidget extends StatefulWidget {
 class _CategoriesWidgetState extends State<CategoriesWidget> {
   bool isHotIconVisible = false;
   List<TopGenreDto> _genres = [];
-
+  late Timer _timer = Timer(Duration.zero, (){});
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -145,10 +145,10 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   void initState() {
     super.initState();
     _startAnimation();
-    _fetchTopGenres(6);
+    _fetchTopGenres();
   }
 
-  void _fetchTopGenres(int limit) async {
+  void _fetchTopGenres() async {
     try {
       List<TopGenreDto> genres = await GenreService().fetchTopGenres();
       setState(() {
@@ -159,14 +159,25 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
       // Handle error accordingly
     }
   }
+  @override
+  void dispose() {
+    if (_timer.isActive) {
+      _timer.cancel(); // Hủy `_timer` nếu nó đã được khởi tạo
+    }
+    super.dispose();
+  }
 
   void _startAnimation() {
-    Timer.periodic(Duration(seconds: 2), (timer) {
+    if (_timer.isActive) {
+      _timer.cancel(); // Hủy timer hiện tại nếu nó đã được khởi tạo
+    }
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
       setState(() {
         isHotIconVisible = !isHotIconVisible;
       });
     });
   }
+
 
   Color _randomColor() {
     final List<Color> colors = [
