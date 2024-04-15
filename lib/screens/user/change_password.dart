@@ -3,62 +3,70 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sweet_peach_fe/apis/api_const.dart';
+import 'package:sweet_peach_fe/screens/user/my_profile.dart';
 import 'package:sweet_peach_fe/screens/user/password_hashing.dart';
 import 'package:sweet_peach_fe/screens/user/validation.dart';
 
+import '../../apis/auth_service.dart';
 import 'login_screen.dart';
 
-class Register extends StatefulWidget {
+typedef void LogoutCallback();
+
+class ChangePassword extends StatefulWidget {
+  final LogoutCallback? onLogout;
+
+  ChangePassword({Key? key, this.onLogout}) : super(key: key);
+
   @override
-  _RegisterState createState() => _RegisterState();
+  _ChangePasswordState createState() => _ChangePasswordState();
 }
 
-class _RegisterState extends State<Register> {
-  TextEditingController userNameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+class _ChangePasswordState extends State<ChangePassword> {
+  TextEditingController currentPasswordController = TextEditingController();
+  TextEditingController newPasswordController = TextEditingController();
 
-  Future<void> register() async {
-    final String userName = userNameController.text.trim();
-    final String email = emailController.text.trim();
-    final String password = PasswordHashing.hashPassword(passwordController.text.trim());
-    String? emailError = Validation.validateEmail(email);
-    String? userNameError = Validation.validateUsername(userName);
-    String? passwordError = Validation.validatePassword(password);
+  Future<void> changePassword() async {
+    final auth = AuthService();
+    final int? userIdInt = await auth.getUserId();
+    final String userId = userIdInt.toString();
+    final String currentPassword = PasswordHashing.hashPassword(currentPasswordController.text.trim());
+    final String newPassword = PasswordHashing.hashPassword(newPasswordController.text.trim());
+    String? currentPasswordError = Validation.validatePassword(currentPassword);
+    String? newPasswordError = Validation.validatePassword(newPassword);
 
-    if (emailError != null || userNameError != null || passwordError != null) {
+    if (currentPasswordError != null || newPasswordError != null) {
       final snackBar = SnackBar(
-        content: Text(emailError ?? userNameError ?? passwordError!),
+        content: Text(currentPasswordError ?? newPasswordError!),
         backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       return;
     }
-    final Uri url = Uri.parse('${ApiConst.baseUrl}api/users/register');
+    final Uri url = Uri.parse('${ApiConst.baseUrl}api/users/${userId}/change-password');
     try {
-      final response = await http.post(
+      final response = await http.put(
         url,
         body: json.encode({
-          'username': userName,
-          'email': email,
-          'password': password,
+          'oldPassword': currentPassword,
+          'newPassword': newPassword,
         }),
         headers: {
           'Content-Type': 'application/json',
         },
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration successfully')),
+          SnackBar(content: Text('Thay đổi mật khẩu thành công'), backgroundColor: Colors.green,),
         );
+        widget.onLogout?.call();
         Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen())
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed Email already exists!')),
+          SnackBar(content: Text('mật khẩu hiện tại không khớp '), backgroundColor: Colors.red,),
         );
       }
     } catch (error) {
@@ -72,6 +80,15 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
       body: Stack(
         children: <Widget>[
           Container(
@@ -104,45 +121,29 @@ class _RegisterState extends State<Register> {
                 padding: EdgeInsets.all(20.0),
                 child: Column(
                   children: <Widget>[
-                    Text(
-                      'Đăng Kí',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
                     TextField(
-                      controller: userNameController,
+                      controller: currentPasswordController,
+                      obscureText: true,
                       decoration: InputDecoration(
-                        hintText: 'User Name',
+                        hintText: 'Mật khẩu hiện tại',
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.5),
                       ),
                     ),
                     SizedBox(height: 20),
                     TextField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        hintText: 'Email của bạn',
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    TextField(
-                      controller: passwordController,
+                      controller: newPasswordController,
                       obscureText: true,
                       decoration: InputDecoration(
-                        hintText: 'Mật khẩu của bạn',
+                        hintText: 'Mật khẩu mới',
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.5),
                       ),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: register,
-                      child: Text('Đăng Kí'),
+                      onPressed: changePassword,
+                      child: Text('Đổi Mật Khẩu'),
                     ),
                   ],
                 ),
@@ -150,25 +151,6 @@ class _RegisterState extends State<Register> {
             ],
           ),
         ],
-      ),
-    );
-  }
-  Widget _buildSkipButton(BuildContext context) {
-    return Positioned(
-      top: 40,
-      right: 20,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: Text(
-          'Bỏ qua',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            decoration: TextDecoration.underline,
-          ),
-        ),
       ),
     );
   }

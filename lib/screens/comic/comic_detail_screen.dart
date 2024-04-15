@@ -3,8 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:sweet_peach_fe/apis/api_const.dart';
 import 'package:sweet_peach_fe/screens/utils/abbreviate.dart';
 import '../../apis/comic_service.dart';
+import '../../apis/history_service.dart';
 import '../../dtos/comic_dto.dart';
 import '../../models/Chapter.dart';
+import '../../models/comic.dart';
 import 'chapter_detail_screen.dart';
 
 class ComicDetailScreen extends StatefulWidget {
@@ -22,9 +24,9 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
   int selectedChapterIndex = -1;
   bool oldestSelected = false;
   bool newestSelected = false;
-  bool isInHistory = true;
+  bool isInHistory = false;
   bool isLoading = true;
-
+  int? mostRecentChapterId;
   @override
   void initState() {
     super.initState();
@@ -87,6 +89,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
         chapters = comic.chapters;
         isLoading = false;
         sortChapters(false);
+        checkHistory();
       });
     } catch (e) {
       print('Error fetching comic detail: $e');
@@ -109,11 +112,11 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
             ElevatedButton(
               onPressed: () => _onNavigationButtonTap(),
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.white), // Đặt màu nền của nút là màu trắng
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.green), // Đặt màu nền của nút là màu trắng
                 foregroundColor: MaterialStateProperty.all<Color>(Colors.black), // Đặt màu chữ của nút là màu đen
               ),
               child: Text(
-                isInHistory ? 'Continue Reading' : 'Start Over',
+                isInHistory ? 'Đọc tiếp  ' : 'Đọc từ đầu',
                 style: TextStyle(color: Colors.black), // Đặt màu chữ của nút là màu đen
               ),
             ),
@@ -326,7 +329,81 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
     );
   }
 
-  void _onNavigationButtonTap() {
-    // Your logic for navigation button tap
+  void checkHistory() async {
+    try {
+      HistoryService historyService = HistoryService();
+      List<Comic> history = await historyService.getReadingHistory();
+      bool isInHistory1 = history.any((element) => element.comicId == widget.comicId);
+
+      setState(() {
+        isInHistory = isInHistory1;
+      });
+
+      if (isInHistory) {
+        // Find the title of the last chapter in the history
+        Comic? historyEntry = history.firstWhere((element) => element.comicId == widget.comicId, );
+        String lastChapterTitle = historyEntry.lastChapter;
+
+        // Find the id of the chapter with the corresponding title
+        Chapter? lastChapter = chapters.firstWhere((chapter) => chapter.title == lastChapterTitle,);
+        mostRecentChapterId = lastChapter.id;
+                  }
+
+      setState(() {
+        mostRecentChapterId = mostRecentChapterId;
+        print("ok:${mostRecentChapterId}");
+      });
+    } catch (e) {
+      print('Error checking reading history: $e');
+    }
   }
+
+  void _onNavigationButtonTap() {
+
+    if (isInHistory && mostRecentChapterId != null) {
+      // Navigate to ChapterDetailScreen with most recent chapterId
+      List<Map<String, dynamic>> chapterList = chapters.map((chapter) {
+        return {
+          'chapterId': chapter.id,
+          'title': chapter.title,
+          // Add other information if needed
+        };
+      }).toList();
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChapterDetailScreen(
+            chapterId: mostRecentChapterId!,
+            chapters: chapterList,
+            comicId: widget.comicId,
+          ),
+        ),
+      );
+    } else {
+      // Navigate to ChapterDetailScreen with the first chapterId
+      if (chapters.isNotEmpty) {
+        List<Map<String, dynamic>> chapterList = chapters.map((chapter) {
+          return {
+            'chapterId': chapter.id,
+            'title': chapter.title,
+            // Add other information if needed
+          };
+        }).toList();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChapterDetailScreen(
+              chapterId: chapters.last.id,
+              chapters: chapterList,
+              comicId: widget.comicId,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+
 }

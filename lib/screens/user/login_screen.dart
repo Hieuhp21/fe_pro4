@@ -20,10 +20,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     String email = emailController.text;
     String password = PasswordHashing.hashPassword(passwordController.text);
-    print("password"+password);
-    if (Validation.validateEmail(email) != null ||
-        Validation.validatePassword(password) != null) {
-      // Dữ liệu không hợp lệ, không gửi yêu cầu đăng nhập
+    String? emailError = Validation.validateEmail(email);
+    String? passwordError = Validation.validatePassword(password);
+
+    if (emailError != null || passwordError != null) {
+      final snackBar = SnackBar(
+        content: Text(emailError ?? passwordError!),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
       return;
     }
 
@@ -36,8 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => IndexController()),
       );
     } else {
-      // Đăng nhập thất bại
-      // Hiển thị thông báo lỗi cho người dùng
+
       showDialog(
         context: context,
         builder: (BuildContext context) {

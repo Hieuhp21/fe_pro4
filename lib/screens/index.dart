@@ -31,8 +31,12 @@ class _IndexControllerState extends State<IndexController> {
   }
 
   void _onItemTapped(int index) {
-
-    if (index == 3) {
+    if (index == 1) { // Check if the tapped index corresponds to search button
+      setState(() {
+        _selectedIndex = index;
+        _pages[_selectedIndex] = Search(category: 'all'); // Set category to 'all' for search page
+      });
+    } else if (index == 3) {
       if (_isLoggedIn) {
         setState(() {
           _selectedIndex = index;
@@ -52,6 +56,7 @@ class _IndexControllerState extends State<IndexController> {
     }
   }
 
+
   void _navigateToCategory(int index, String? category) {
     final selectedCategory = category ?? 'all';
     setState(() {
@@ -65,7 +70,6 @@ class _IndexControllerState extends State<IndexController> {
   void initState() {
     super.initState();
     _checkLoginStatus();
-    // Truyền hàm callback xuống cho HomePage
     ( _pages[0] as HomePage).navigateToCategory = _navigateToCategory;
   }
 
@@ -76,7 +80,7 @@ class _IndexControllerState extends State<IndexController> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black.withOpacity(0.5),
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Colors.pink,
         unselectedItemColor: Colors.white,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

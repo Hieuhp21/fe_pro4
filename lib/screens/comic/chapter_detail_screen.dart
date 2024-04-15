@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:sweet_peach_fe/apis/follow_service.dart';
 
 import '../../apis/api_const.dart';
+import '../../apis/auth_service.dart';
 import '../../apis/chapter_service.dart';
 import '../../apis/history_service.dart';
+import '../../models/comic.dart';
 import '../../models/image_chapter.dart';
+import '../user/login_screen.dart';
+import 'comment_view.dart';
 
 class ChapterDetailScreen extends StatefulWidget {
   final int chapterId;
   final List<Map<String, dynamic>> chapters;
   final int comicId;
+
   ChapterDetailScreen({required this.chapterId, required this.chapters,  required this.comicId});
 
   @override
@@ -16,6 +23,9 @@ class ChapterDetailScreen extends StatefulWidget {
 }
 
 class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
+  AuthService _authService = AuthService();
+  late int? _userId;
+  final followService= FollowService();
   final historyService= HistoryService();
   final chapterService = ChapterService();
   late ScrollController _scrollController;
@@ -31,9 +41,29 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     super.initState();
     currentChapterId = widget.chapterId;
     fetchChapterImages(currentChapterId);
-
+    _loadUserId();
     _scrollController = ScrollController();
 
+  }
+  Future<void> _initializeFavoriteStatus() async {
+    if (_userId != null) {
+      bool isFollowed = await _isComicFollowed(widget.comicId);
+      setState(() {
+        print('aaaa: ${isFollowed}');
+        isFavorite = isFollowed;
+      });
+    } else {
+      setState(() {
+        isFavorite = false;
+      });
+    }
+  }
+  Future<void> _loadUserId() async {
+    int? userId = await _authService.getUserId();
+    setState(() {
+      _userId = userId;
+    });
+    _initializeFavoriteStatus();
   }
   void _startAutoScroll() {
     double currentOffset = _scrollController.offset;
@@ -54,6 +84,8 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       await Future.delayed(Duration(seconds: 5));
       if (isAutoScrolling) {
         _startAutoScroll();
+      }else{
+        break;
       }
     }
   }
@@ -62,8 +94,20 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     await historyService.addReadingHistory(widget.comicId, chapterId);
   }
   Future<void> incrementViewCount(int chapterId) async {
-
     await chapterService.incrementViewCount(chapterId) ;
+  }
+  Future<bool> _isComicFollowed(int comicId) async {
+    if (_userId != null) {
+      List<Comic> followedComics = await followService.getFollowComic();
+      return followedComics.any((comic) => comic.comicId == comicId);
+    }
+    return false;
+  }
+  Future<void>  followComic(int userId,int comicId)async {
+    await followService.followComic(userId, comicId);
+  }
+  Future<void>  unfollowComic(int userId,int comicId)async {
+    await followService.unfollowComic(userId, comicId);
   }
   Future<void> fetchChapterImages(int chapterId) async {
     try {
@@ -78,6 +122,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       print('Error fetching chapter images: $e');
     }
   }
+
 
   void toggleFilterVisibility() {
     setState(() {
@@ -102,7 +147,43 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     });
     fetchChapterImages(currentChapterId);
   }
-
+  Future<void> _handleFollowButton() async {
+    if (_userId == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Yêu cầu đăng nhập'),
+            content: Text('Vui lòng đăng nhập để theo dõi truyện.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()));
+                },
+                child: Text('Đăng nhập'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Đóng hộp thoại
+                },
+                child: Text('Bỏ qua'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      bool isFollowed = await _isComicFollowed(widget.comicId);
+      print(isFollowed);
+      if (isFollowed) {
+        await unfollowComic(_userId!, widget.comicId);
+      } else {
+        await followComic(_userId!, widget.comicId);
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return GestureDetector( // Bọc toàn bộ nội dung trong GestureDetector
@@ -112,15 +193,18 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
         });
       },
       child: Scaffold(
+
         backgroundColor: Colors.transparent,
         body: NestedScrollView(
+
           floatHeaderSlivers: true,
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
               SliverAppBar(
-                backgroundColor: Colors.black,
+                backgroundColor: Colors.black.withOpacity(0.4),
                 title: Text(
-                  widget.chapters[widget.chapterId]['title'],
+                  widget.chapters
+                      .firstWhere((chapter) => chapter['chapterId'] == currentChapterId)['title'],
                   style: TextStyle(fontSize: 24.0, color: Colors.white),
                 ),
                 centerTitle: true,
@@ -139,6 +223,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                       color: isFavorite ? Colors.red : Colors.white,
                     ),
                     onPressed: () {
+                      _handleFollowButton();
                       setState(() {
                         isFavorite = !isFavorite;
                       });
@@ -155,25 +240,48 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                   Expanded(
                     child: Center(
                       child: ListView.builder(
+                        shrinkWrap: true,
                         controller: _scrollController,
-                        itemCount: images.length,
+                        itemCount: images.length + 1, // Số lượng phần tử = số lượng ảnh + 1 (tab nhỏ)
                         itemBuilder: (context, index) {
-                          return Image.network(
-                            ApiConst.baseUrl + 'images/' + images[index].imagePath,
-                            fit: BoxFit.contain,
-                          );
+                          if (index < images.length) {
+                            // Hiển thị ảnh
+                            return Image.network(
+                              ApiConst.baseUrl + 'images/' + images[index].imagePath,
+                              fit: BoxFit.contain,
+                            );
+                          } else {
+                            return SingleChildScrollView( // Sử dụng SingleChildScrollView thay thế cho Container
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 350, // Chiều cao của tab nhỏ
+                                    padding: EdgeInsets.all(10),
+                                    margin: EdgeInsets.symmetric(vertical: 20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: CommentScreen(chapterId: widget.chapterId, comicId: widget.comicId,),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                          }
                         },
                       ),
                     ),
                   ),
                 ],
               ),
-              isFilterVisible ?   Positioned(
+              isFilterVisible ? Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
+                  duration: Duration(milliseconds: 400),
                   height:  MediaQuery.of(context).size.height * 0.5 ,
                   color: Colors.black,
                   child: Column(
@@ -215,7 +323,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                           ],
                         ),
                       ),
-                      Expanded(
+                      Expanded( // Bọc ListView.builder trong Expanded để nó mở rộng theo chiều dọc
                         child: ListView.builder(
                           shrinkWrap: true,
                           itemCount: widget.chapters.length,
@@ -235,9 +343,10 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                     ],
                   ),
                 ),
-              ):Container(),
+              ) : Container(),
             ],
           ),
+
         ),
         bottomNavigationBar: BottomAppBar(
           color: Colors.transparent,
@@ -246,7 +355,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
             children: [
               IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
+                onPressed:currentChapterId <= 1 ? null : () {
                   setState(() {
                     currentChapterId--;
                   });
@@ -277,7 +386,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
-                onPressed: () {
+                onPressed:  currentChapterId >= widget.chapters.length ? null :() {
                   setState(() {
                     currentChapterId++;
                   });
@@ -296,3 +405,4 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     super.dispose();
   }
 }
+

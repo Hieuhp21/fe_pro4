@@ -61,14 +61,14 @@ class _ComicListViewState extends State<ComicListView> {
                   SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.visibility, color: Colors.grey, size: 14,),
+                      const Icon(Icons.visibility, color: Colors.greenAccent, size: 14,),
                       SizedBox(width: 5),
                       Text(
                         '${abbreviateNumber(comic.views)}',
                         style: TextStyle(color: Colors.grey,fontSize: 14),
                       ),
                       SizedBox(width: 10),
-                      Icon(Icons.favorite, color: Colors.grey,  size: 14,),
+                      Icon(Icons.favorite, color: Colors.pink,  size: 14,),
                       SizedBox(width: 5),
                       Text(
                         '${abbreviateNumber(comic.follows)}',

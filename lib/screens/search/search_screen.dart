@@ -90,10 +90,10 @@ class _SearchPageState extends State<Search> {
                 SizedBox(height: 20),
                 _buildNavigationTabs(),
                 SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
+                const Padding(
+                  padding: EdgeInsets.only(left: 16.0),
                   child: Text(
-                    'Tất cả - Ngày cập nhập',
+                    'My List',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_peach_fe/screens/comic/comment_view.dart';
 import 'package:sweet_peach_fe/screens/index.dart';
 
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       home: IndexController(),
-      //home: CustomSliverAppbar(),
+
     );
   }
 }

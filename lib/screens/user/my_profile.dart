@@ -1,12 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sweet_peach_fe/apis/api_const.dart';
-import 'dart:convert';
-
 import '../../apis/auth_service.dart';
 import '../../apis/user_service.dart';
+import 'change_password.dart';
 import 'login_screen.dart';
 
 class MyProfile extends StatefulWidget {
@@ -44,9 +42,11 @@ class _MyProfileState extends State<MyProfile> {
   }
 
   Future<void> _changePassword() async {
-    var url = Uri.parse('https://example.com/change-password');
-    var response = await http.post(url);
-    // Xử lý phản hồi ở đây nếu cần
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ChangePassword(onLogout: _logout))
+    );
+
   }
 
   Future<void> _changeAvatar() async {
@@ -60,6 +60,7 @@ class _MyProfileState extends State<MyProfile> {
           if (kDebugMode) {
             print('Avatar changed successfully');
           }
+          await _fetchUserInfo();
         } else {
           if (kDebugMode) {
             print('Failed to change avatar');
@@ -95,14 +96,15 @@ class _MyProfileState extends State<MyProfile> {
             child: CircleAvatar(
               radius: 50,
               backgroundColor: Colors.grey[200],
-              child: avatarPath != null
-                  ? Image.network(
-                  '${ApiConst.baseUrl}images/${avatarPath}',
-                  fit: BoxFit.cover)
-                  : Text(
+              backgroundImage: avatarPath != null
+                  ? NetworkImage('${ApiConst.baseUrl}images/$avatarPath')
+                  : null,
+              child: avatarPath == null
+                  ? Text(
                 username.isNotEmpty ? username[0].toUpperCase() : '',
                 style: TextStyle(fontSize: 36),
-              ),
+              )
+                  : null,
             ),
           ),
           TextButton(

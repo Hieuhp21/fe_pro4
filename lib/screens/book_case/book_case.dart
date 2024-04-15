@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_peach_fe/apis/follow_service.dart';
 import 'package:sweet_peach_fe/apis/history_service.dart';
-
 import 'dart:ui';
-
 import '../../models/comic.dart';
 import '../comic/comic_list_view.dart';
-import 'filter.dart';
 
 class Bookcase extends StatefulWidget {
+  String? searchTitle;
   @override
   _BookcaseState createState() => _BookcaseState();
 }
@@ -17,7 +16,7 @@ class _BookcaseState extends State<Bookcase> {
   late List<Comic> _historyComics = [];
   late List<Comic> _followedComics = [];
   final HistoryService historyService = HistoryService();
-
+  final FollowService followService= FollowService();
   @override
   void initState() {
     super.initState();
@@ -27,7 +26,7 @@ class _BookcaseState extends State<Bookcase> {
 
   Future<void> _fetchHistoryComics() async {
     try {
-      List<Comic> fetchedComics = await historyService.getReadingHistory();
+      List<Comic> fetchedComics = await  historyService.getReadingHistory();
       setState(() {
         _historyComics = fetchedComics;
       });
@@ -37,9 +36,21 @@ class _BookcaseState extends State<Bookcase> {
   }
 
   Future<void> _fetchFollowedComics() async {
-    // Logic để lấy danh sách truyện theo dõi
+    try {
+      List<Comic> fetchedComics = await followService.getFollowComic();
+      setState(() {
+        _followedComics = fetchedComics;
+      });
+    } catch (e) {
+      print('Error fetching follows comics: $e');
+    }
   }
-
+  List<Comic> _filterComics(List<Comic> comics) {
+    if (widget.searchTitle != null) {
+      comics = comics.where((comic) => comic.title.toUpperCase().contains(widget.searchTitle!)).toList();
+    }
+    return comics;
+  }
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -47,7 +58,6 @@ class _BookcaseState extends State<Bookcase> {
       child: Scaffold(
         body: Stack(
           children: [
-            // Background
             Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -66,7 +76,7 @@ class _BookcaseState extends State<Bookcase> {
             Column(
               children: [
                 // Title
-                SizedBox(height: 200), // Placeholder for title
+                SizedBox(height: 100), // Placeholder for title
                 // Search bar
                 Container(
                   height: kToolbarHeight + 50,
@@ -88,18 +98,15 @@ class _BookcaseState extends State<Bookcase> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
+                            onChanged: (value) {
+                              setState(() {
+                                widget.searchTitle = value.toUpperCase();
+                              });
+                            },
                           ),
                         ),
                         SizedBox(width: 5),
-                        IconButton(
-                          icon: Icon(Icons.tune, color: Colors.white),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => FilterPage()),
-                            );
-                          },
-                        ),
+
                       ],
                     ),
                   ),
@@ -117,8 +124,8 @@ class _BookcaseState extends State<Bookcase> {
                     color: Colors.transparent,
                     child: TabBarView(
                       children: [
-                        ComicListView(comics: _historyComics),
-                        ComicListView(comics: _followedComics),
+                        ComicListView(comics: _filterComics(_historyComics)),
+                        ComicListView(comics: _filterComics(_followedComics)),
                       ],
                     ),
                   ),
@@ -131,7 +138,7 @@ class _BookcaseState extends State<Bookcase> {
               left: 0,
               right: 0,
               child: Container(
-                height: 200,
+                height: 100,
                 color: Colors.transparent,
                 alignment: Alignment.center,
                 child: Text(
