@@ -20,7 +20,7 @@ class _MyProfileState extends State<MyProfile> {
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-    await prefs.remove('userId');// Xóa token từ SharedPreferences
+    await prefs.remove('userId');
 
     Navigator.pushAndRemoveUntil(
       context,

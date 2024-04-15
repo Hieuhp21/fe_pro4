@@ -2,12 +2,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sweet_peach_fe/apis/api_const.dart';
+import 'package:sweet_peach_fe/apis/auth_service.dart';
 import '../../apis/comment_service.dart';
 import '../../models/comment.dart';
+import '../user/login_screen.dart';
 
 class CommentScreen extends StatefulWidget {
   final int chapterId;
   final int comicId;
+
   CommentScreen({required this.chapterId, required this.comicId});
 
   @override
@@ -17,13 +20,22 @@ class CommentScreen extends StatefulWidget {
 class _CommentScreenState extends State<CommentScreen> {
   late List<Comment> comments = [];
   bool isLoading = false;
+  bool isLoggedIn = false;
   TextEditingController _commentController = TextEditingController();
   final  commentService = CommentService();
   @override
   void initState() {
     super.initState();
     fetchComments(widget.chapterId);
-    print('aaaa: ${comments}');
+    checkLoginStatus();
+  }
+  void checkLoginStatus() async {
+    final authService = AuthService();
+    String? token = await authService.getToken();
+    print('Token: $token');
+    setState(() {
+      isLoggedIn = token != null;
+    });
   }
 
   Future<void> fetchComments(int chapterId) async {
@@ -33,6 +45,7 @@ class _CommentScreenState extends State<CommentScreen> {
       });
 
       List<Comment> fetchedComment = await commentService.fetchComments(chapterId);
+      if (!mounted) return;
       setState(() {
         comments = fetchedComment;
       });
@@ -82,9 +95,8 @@ class _CommentScreenState extends State<CommentScreen> {
                         Container(
                           width: 50,
                           height: 50,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _getRandomColor(), // Lấy màu ngẫu nhiên cho khung avatar
                           ),
                           child: CircleAvatar(
                             backgroundImage: NetworkImage(
@@ -156,14 +168,48 @@ class _CommentScreenState extends State<CommentScreen> {
                   decoration: InputDecoration(
                     hintText: 'Thêm bình luận...',
                   ),
+                 // enabled: isLoggedIn,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.send,color: Colors.blue ),
+                icon: Icon(Icons.send, color: Colors.blue),
                 onPressed: () {
-                  if (_commentController.text.isNotEmpty) {
-                    postComment(widget.chapterId,widget.comicId, _commentController.text);
-                    _commentController.clear();
+                  if (isLoggedIn) {
+                    if (_commentController.text.isNotEmpty) {
+                      postComment(
+                          widget.chapterId, widget.comicId, _commentController.text);
+                      _commentController.clear();
+                    }
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Bạn cần đăng nhập"),
+                          content: Text("Để thêm bình luận, vui lòng đăng nhập."),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Bỏ qua"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Navigate to login screen
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text("Đăng nhập"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   }
                 },
               ),
@@ -173,15 +219,5 @@ class _CommentScreenState extends State<CommentScreen> {
       ],
     );
   }
-
-  Color _getRandomColor() {
-    // Tạo một màu ngẫu nhiên
-    final random = Random();
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
-  }
+  
 }

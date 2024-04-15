@@ -38,5 +38,13 @@ class AuthService {
       return null; // Trả về null nếu không thể chuyển đổi hoặc không có giá trị
     }
   }
-
+  Future<String?> getToken() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token= prefs.getString('token');
+    if (token != null && token.isNotEmpty) {
+      return token;
+    } else {
+      return null;
+    }
+  }
 }
