@@ -29,13 +29,14 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
   final historyService= HistoryService();
   final chapterService = ChapterService();
   late ScrollController _scrollController;
-  int currentChapterId =1;
+  int currentChapterId =15;
   bool isFavorite = false;
   bool isFilterVisible = false;
   String selectedSortingOption = 'Mới nhất';
   bool isAutoScrolling = false;
   List<ImageChapter> images = [];
-
+  int? maxChapterId;
+  int? minChapterId;
   @override
   void initState() {
     super.initState();
@@ -43,13 +44,17 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     fetchChapterImages(currentChapterId);
     _loadUserId();
     _scrollController = ScrollController();
-
+    maxChapterId = widget.chapters.isNotEmpty
+        ? widget.chapters.map<int>((chapter) => chapter['chapterId']).reduce((value, element) => value > element ? value : element)
+        : null;
+    minChapterId = widget.chapters.isNotEmpty
+        ? widget.chapters.map<int>((chapter) => chapter['chapterId']).reduce((value, element) => value < element ? value : element)
+        : null;
   }
   Future<void> _initializeFavoriteStatus() async {
     if (_userId != null) {
       bool isFollowed = await _isComicFollowed(widget.comicId);
       setState(() {
-        print('aaaa: ${isFollowed}');
         isFavorite = isFollowed;
       });
     } else {
@@ -176,7 +181,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       );
     } else {
       bool isFollowed = await _isComicFollowed(widget.comicId);
-      print(isFollowed);
+
       if (isFollowed) {
         await unfollowComic(_userId!, widget.comicId);
       } else {
@@ -263,7 +268,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                                       border: Border.all(color: Colors.grey),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: CommentScreen(chapterId: widget.chapterId, comicId: widget.comicId,),
+                                    child: CommentScreen(chapterId: currentChapterId, comicId: widget.comicId,),
                                   ),
                                 ],
                               ),
@@ -351,11 +356,12 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
         bottomNavigationBar: BottomAppBar(
           color: Colors.transparent,
           child: Row(
+
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed:currentChapterId <= 1 ? null : () {
+                onPressed:currentChapterId <=  minChapterId! ? null : () {
                   setState(() {
                     currentChapterId--;
                   });
@@ -386,7 +392,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
-                onPressed:  currentChapterId >= widget.chapters.length ? null :() {
+                onPressed:  currentChapterId >=  maxChapterId! ? null :() {
                   setState(() {
                     currentChapterId++;
                   });

@@ -14,7 +14,7 @@ class UserService {
 
     if (response.statusCode == 200) {
       // Decode JSON response
-      final jsonData = jsonDecode(response.body);
+      final jsonData = json.decode(utf8.decode(response.bodyBytes));
       // Create a User object from decoded JSON
       final user = User.fromJson(jsonData);
       return user;

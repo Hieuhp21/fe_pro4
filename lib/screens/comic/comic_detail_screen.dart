@@ -27,6 +27,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
   bool isInHistory = false;
   bool isLoading = true;
   int? mostRecentChapterId;
+  bool isDescriptionExpanded = false;
   @override
   void initState() {
     super.initState();
@@ -63,7 +64,11 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
     );
   }
 
-
+  void toggleDescriptionExpansion() {
+    setState(() {
+      isDescriptionExpanded = !isDescriptionExpanded;
+    });
+  }
   Widget buildSortButton(bool isOldest, String label) {
     return ElevatedButton(
       onPressed: () => sortChapters(isOldest),
@@ -214,11 +219,24 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                   ],
                 ),
 
-                Text(
-                  comic.description,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
+                GestureDetector(
+                  onTap: toggleDescriptionExpansion,
+                  child: Text(
+                    isDescriptionExpanded ? comic.description : comic.description.substring(0, 80),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                if (!isDescriptionExpanded)
+                  SizedBox(height: 10.0),
+                const Text(
+                  'xem thêm',
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.blueGrey,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
                 SizedBox(height: 10.0),
@@ -351,7 +369,6 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
 
       setState(() {
         mostRecentChapterId = mostRecentChapterId;
-        print("ok:${mostRecentChapterId}");
       });
     } catch (e) {
       print('Error checking reading history: $e');

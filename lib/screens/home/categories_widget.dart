@@ -6,6 +6,7 @@ import 'package:sweet_peach_fe/screens/home/section_title_widget.dart';
 
 import '../../apis/genre_service.dart';
 import '../../dtos/top_genre_dto.dart';
+import '../search/search_screen.dart';
 
 
 class CategoriesWidget extends StatefulWidget {
@@ -62,8 +63,12 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     Color color2 = _randomColor();
     return GestureDetector(
       onTap: () {
-        // Xử lý khi bấm vào item
-        // Ví dụ: Chuyển sang trang tương ứng
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Search(category: 'byGenre',genreId:genre.genreId),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

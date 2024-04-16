@@ -1,4 +1,4 @@
-import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sweet_peach_fe/apis/api_const.dart';
@@ -32,7 +32,6 @@ class _CommentScreenState extends State<CommentScreen> {
   void checkLoginStatus() async {
     final authService = AuthService();
     String? token = await authService.getToken();
-    print('Token: $token');
     setState(() {
       isLoggedIn = token != null;
     });
@@ -41,7 +40,7 @@ class _CommentScreenState extends State<CommentScreen> {
   Future<void> fetchComments(int chapterId) async {
     try {
       setState(() {
-        isLoading = true; // Hiển thị CircularProgressIndicator
+        isLoading = true;
       });
 
       List<Comment> fetchedComment = await commentService.fetchComments(chapterId);
@@ -54,7 +53,7 @@ class _CommentScreenState extends State<CommentScreen> {
       // Hiển thị thông báo lỗi cho người dùng nếu cần
     } finally {
       setState(() {
-        isLoading = false; // Ẩn CircularProgressIndicator
+        isLoading = false;
       });
     }
   }
@@ -64,10 +63,8 @@ class _CommentScreenState extends State<CommentScreen> {
        await commentService.postComment(chapterId,comicId, comment);
         fetchComments(widget.chapterId);
 
-
     } catch (e) {
       print("Failed to post comment: $e");
-      // Hiển thị thông báo lỗi cho người dùng nếu cần
     }
   }
   DateFormat dateFormat = DateFormat('HH:mm - dd/MM/yyyy');

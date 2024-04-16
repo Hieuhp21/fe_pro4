@@ -22,7 +22,7 @@ class NewStoriesWidget extends StatelessWidget {
         ),
         SizedBox(height: 16),
         FutureBuilder<List<Comic>>(
-          future: ComicService.fetchNewStories(6),
+          future: ComicService.fetchNewStories(10),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();

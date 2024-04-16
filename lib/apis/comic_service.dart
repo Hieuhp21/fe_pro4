@@ -46,7 +46,7 @@ class ComicService {
 
   // Hàm gọi API để lấy danh sách truyện mới nhất
   static Future<List<Comic>> fetchNewStories(int limit) async {
-    final apiUrl = '${ApiConst.baseUrl}api/comics/newest1?limit=${limit}';
+    final apiUrl = '${ApiConst.baseUrl}api/comics/newest1?limitnew=${limit}';
     return await fetchData(apiUrl);
   }
 

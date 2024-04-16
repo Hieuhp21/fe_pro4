@@ -1,7 +1,7 @@
 class Comment {
   final int userId;
   final String username;
-  final String avatar;
+  final String? avatar;
   final int comicId;
   final int chapterId;
   final String content;

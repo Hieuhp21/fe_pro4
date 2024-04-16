@@ -4,13 +4,14 @@ import 'package:sweet_peach_fe/screens/home/section_title_widget.dart';
 
 import '../../apis/comic_service.dart';
 import '../../models/comic.dart';
+import '../comic/comic_detail_screen.dart';
 
 
 class RecommendedStoriesWidget extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const RecommendedStoriesWidget({required this.title, required this.onTap});
+  const RecommendedStoriesWidget({super.key, required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class RecommendedStoriesWidget extends StatelessWidget {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16.0,
           mainAxisSpacing: 16.0,
@@ -67,7 +68,12 @@ class RecommendedStoriesWidget extends StatelessWidget {
 
           return GestureDetector(
             onTap: () {
-              // Xử lý khi nhấn vào truyện đề xuất
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ComicDetailScreen( comicId: comic.comicId,),
+                ),
+              );
             },
             child: Container(
               decoration: BoxDecoration(
@@ -78,7 +84,7 @@ class RecommendedStoriesWidget extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.5), // Màu đổ bóng
                     spreadRadius: 3, // Bán kính lan rộng của bóng
                     blurRadius: 5, // Độ mờ của bóng
-                    offset: Offset(0, 3), // Độ lệch của bóng
+                    offset: const Offset(0, 3), // Độ lệch của bóng
                   ),
                 ],
               ),
@@ -89,7 +95,7 @@ class RecommendedStoriesWidget extends StatelessWidget {
                     flex: 6,
                     child: Image.network(
                       '${ApiConst.baseUrl}images/${coverImageUrl}',
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                     ),
                   ),
                   Expanded(
@@ -102,7 +108,7 @@ class RecommendedStoriesWidget extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
@@ -111,35 +117,35 @@ class RecommendedStoriesWidget extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.visibility,
                                 color: Colors.white,
                                 size: 10,
                               ),
                               Text(
                                 viewsText,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                 ),
                               ),
-                              SizedBox(width: 8),
-                              Icon(
+                              const SizedBox(width: 8),
+                              const Icon(
                                 Icons.favorite,
                                 color: Colors.white,
                                 size: 10,
                               ),
                               Text(
                                 followersText,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
                                  latestChapter,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                 ),
